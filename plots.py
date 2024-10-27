@@ -5,7 +5,7 @@ from typing import Dict, List
 from matplotlib.ticker import MaxNLocator
 import streamlit as st
 
-# Upewnij się, że folder do zapisywania wykresów istnieje
+
 plots_folder = "plots"
 os.makedirs(plots_folder, exist_ok=True)
 
@@ -20,7 +20,6 @@ def plot_results(cpu_usage_data: List[List[int]], queue_fill_data: Dict[str, Lis
     num_cpus = len(cpu_usage_data)
     time_steps = range(len(cpu_usage_data[0]))
 
-    # CPU Usage Plot
     fig, axs = plt.subplots(num_cpus, 1, figsize=(16, 4 * num_cpus), constrained_layout=True)
     fig.suptitle('CPU Usage Over Time', fontsize=18)
 
@@ -36,13 +35,13 @@ def plot_results(cpu_usage_data: List[List[int]], queue_fill_data: Dict[str, Lis
         axs[i].grid()
         axs[i].yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # Zapisz wykres CPU Usage do pliku PNG
+
     cpu_usage_plot_path = os.path.join(plots_folder, "cpu_usage_plot.png")
     plt.savefig(cpu_usage_plot_path)
     print(f"CPU Usage plot saved at: {cpu_usage_plot_path}")
 
-    st.pyplot(fig)  # Display the figure in Streamlit
-    plt.close(fig)  # Close the figure to avoid display issues
+    st.pyplot(fig)
+    plt.close(fig)
 
     # Queue Fill Plot
     num_queues = len(queue_fill_data)
@@ -61,13 +60,13 @@ def plot_results(cpu_usage_data: List[List[int]], queue_fill_data: Dict[str, Lis
         axs2[i].grid()
         axs2[i].yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # Zapisz wykres Queue Fill Levels do pliku PNG
+
     queue_fill_plot_path = os.path.join(plots_folder, "queue_fill_plot.png")
     plt.savefig(queue_fill_plot_path)
     print(f"Queue Fill Levels plot saved at: {queue_fill_plot_path}")
 
-    st.pyplot(fig2)  # Display the second figure in Streamlit
-    plt.close(fig2)  # Close the figure to avoid display issues
+    st.pyplot(fig2)
+    plt.close(fig2)
 
 
 def plot_average_wait_time(average_wait_times: Dict[str, float]) -> None:
@@ -84,21 +83,20 @@ def plot_average_wait_time(average_wait_times: Dict[str, float]) -> None:
     ax.set_xlabel('Process Type', fontsize=12)
     ax.set_ylabel("Average Time Spent in Queue (s)", fontsize=12)
     ax.set_title("Average Time Spent in Queue by Different Types of Processes", fontsize=14)
-    ax.set_xticks(range(len(average_times)))  # Ensure all x-ticks are shown
+    ax.set_xticks(range(len(average_times)))
     ax.set_xticklabels(average_times.keys(), rotation=45)
     ax.grid(axis='y')
 
-    # Add labels for each bar
+
     for bar in bars:
-        yval = bar.get_height()  # Get the height of each bar
+        yval = bar.get_height()
         ax.text(bar.get_x() + bar.get_width() / 2, yval, f'{yval:.2f} s', ha='center', va='bottom')
 
-    # Save the Average Wait Time plot as a PNG file
     average_wait_time_plot_path = os.path.join(plots_folder, "average_wait_time_plot.png")
     plt.savefig(average_wait_time_plot_path)
     print(f"Average Wait Time plot saved at: {average_wait_time_plot_path}")
 
-    st.pyplot(fig)  # Display the average wait time plot in Streamlit
-    plt.close(fig)  # Close the figure to avoid display issues
+    st.pyplot(fig)
+    plt.close(fig)
 
 
