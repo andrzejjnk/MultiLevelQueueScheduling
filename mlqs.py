@@ -285,45 +285,26 @@ class MultiLevelQueueScheduler:
         return {key: np.mean(queue.wait_times) if queue.wait_times else 0 for key, queue in self.queues.items()}
 
 
-async def add_processes(scheduler: MultiLevelQueueScheduler, total_processes: int, processes_per_second: int, burst_time: int) -> None:
+async def add_processes(scheduler: MultiLevelQueueScheduler, total_processes: int, processes_per_second: int, burst_time: int, interactive_burst_time_range: tuple, use_random_interactive_burst: bool) -> None:
     """
-    Continuously add processes to the scheduler.
+    Continuously add processes to the scheduler with configurable burst times.
 
     Args:
         scheduler (MultiLevelQueueScheduler): The scheduler to which processes will be added.
         total_processes (int): Total number of processes to add.
         processes_per_second (int): Number of processes to add per second.
+        burst_time (int): Default burst time for non-interactive processes.
+        interactive_burst_time_range (tuple): Min and max burst time for Interactive processes.
+        use_random_interactive_burst (bool): If True, assigns random burst time within range for Interactive processes.
     """
     for i in range(total_processes):
         await asyncio.sleep(1 / processes_per_second)
         process_name = f'Process_{i + 1}'
         priority = random.choice(list(scheduler.queues.keys()))
-        await scheduler.schedule_process(priority, process_name, burst_time)
 
+        if priority == "Interactive" and use_random_interactive_burst:
+            process_burst_time = random.randint(interactive_burst_time_range[0], interactive_burst_time_range[1])
+        else:
+            process_burst_time = burst_time
 
-# async def main() -> None:
-#     """
-#     Main function to initialize and run the multi-level queue scheduler simulation.
-#     """
-#     num_cpus = 4
-#     total_processes = 5
-#     processes_per_second = 50
-#     speedup_simulation = 20
-#     burst_time = 3
-
-#     scheduler = MultiLevelQueueScheduler(num_cpus, total_processes, speedup_simulation, burst_time)
-
-#     # Add processes in the background
-#     asyncio.create_task(add_processes(scheduler, total_processes, processes_per_second))
-
-#     # Run the scheduler
-#     cpu_usage_data, queue_fill_data, average_wait_times = await scheduler.run_scheduler()
-
-#     # Analyze results
-#     if cpu_usage_data and queue_fill_data:
-#         plot_results(cpu_usage_data, queue_fill_data)
-#         plot_average_wait_time(average_wait_times)
-
-
-# # Start the simulation
-# asyncio.run(main())
+        await scheduler.schedule_process(priority, process_name, process_burst_time)
