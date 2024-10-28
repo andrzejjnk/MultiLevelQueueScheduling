@@ -194,8 +194,8 @@ class MultiLevelQueueScheduler:
                 for i, cpu in enumerate(self.cpus):
                     self.cpu_usage_data[i].append(0 if cpu.is_free else 1)
 
-            for priority, queue in self.queues.items():
-                self.queue_fill_data[priority].append(queue.queue.qsize())
+                for priority, queue in self.queues.items():
+                    self.queue_fill_data[priority].append(queue.queue.qsize())
 
             if all_empty and self.completed_processes == self.total_processes:
                 print("All processes have been completed.")
