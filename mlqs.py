@@ -107,7 +107,7 @@ class CPU:
 
 
 class MultiLevelQueueScheduler:
-    def __init__(self, num_cpus: int, total_processes: int, speedup_simulation: int = 1, time_quantum: int = 2, burst_time=3) -> None:
+    def __init__(self, num_cpus: int, total_processes: int, speedup_simulation: int = 1, burst_time=3, time_quantum: int = 2) -> None:
         """
         Initialize the multi-level queue scheduler with specified CPU count and settings.
 
@@ -191,8 +191,8 @@ class MultiLevelQueueScheduler:
                         else:
                             await queue.add_process(process)
 
-                for i, cpu in enumerate(self.cpus):
-                    self.cpu_usage_data[i].append(0 if cpu.is_free else 1)
+            for i, cpu in enumerate(self.cpus):
+                self.cpu_usage_data[i].append(0 if cpu.is_free else 1)
 
                 for priority, queue in self.queues.items():
                     self.queue_fill_data[priority].append(queue.queue.qsize())
@@ -201,7 +201,7 @@ class MultiLevelQueueScheduler:
                 print("All processes have been completed.")
                 break
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(1/self.speedup_simulation)
 
         return self.cpu_usage_data, self.queue_fill_data, self.average_wait_times()
     

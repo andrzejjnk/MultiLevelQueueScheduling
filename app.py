@@ -5,7 +5,7 @@ import os
 from mlqs import MultiLevelQueueScheduler, add_processes
 from plots import plot_results, plot_average_wait_time
 
-async def run_simulation_dynamic(num_cpus, total_processes, processes_per_second, speedup_simulation, burst_time, interactive_burst_time_range, use_random_interactive_burst):
+async def run_simulation_dynamic(num_cpus, total_processes, processes_per_second, speedup_simulation, burst_time, interactive_burst_time_range, use_random_interactive_burst, time_quantum):
     """
     Run a dynamic simulation of the multi-level queue scheduler.
 
@@ -21,13 +21,13 @@ async def run_simulation_dynamic(num_cpus, total_processes, processes_per_second
     Returns:
         tuple: Contains cpu_usage_data, queue_fill_data, and average_wait_times.
     """
-    scheduler = MultiLevelQueueScheduler(num_cpus, total_processes, speedup_simulation, burst_time)
+    scheduler = MultiLevelQueueScheduler(num_cpus, total_processes, speedup_simulation, burst_time, time_quantum)
     asyncio.create_task(add_processes(scheduler, total_processes, processes_per_second, burst_time, interactive_burst_time_range, use_random_interactive_burst))
     cpu_usage_data, queue_fill_data, average_wait_times = await scheduler.run_scheduler()
     return cpu_usage_data, queue_fill_data, average_wait_times
 
 
-async def run_simulation_static(num_cpus, speedup_simulation, process_settings, interactive_burst_time_range=None, use_random_interactive_burst=False):
+async def run_simulation_static(num_cpus, speedup_simulation, process_settings, time_quantum, interactive_burst_time_range=None, use_random_interactive_burst=False):
     """
     Run a static simulation of the multi-level queue scheduler.
 
@@ -41,7 +41,7 @@ async def run_simulation_static(num_cpus, speedup_simulation, process_settings, 
     Returns:
         tuple: Contains cpu_usage_data, queue_fill_data, and average_wait_times.
     """
-    scheduler = MultiLevelQueueScheduler(num_cpus, sum(settings["count"] for settings in process_settings.values()), speedup_simulation)
+    scheduler = MultiLevelQueueScheduler(num_cpus, sum(settings["count"] for settings in process_settings.values()), speedup_simulation, time_quantum=time_quantum)
 
     for priority, settings in process_settings.items():
         for i in range(settings["count"]):
@@ -74,6 +74,7 @@ def main():
 
     num_cpus = st.number_input("Number of CPUs", min_value=1, max_value=4, value=2)
     speedup_simulation = st.number_input("Speedup Simulation Factor", min_value=1, max_value=100, value=20)
+    time_quantum = st.number_input("Time quantum", min_value=1, max_value=5, value=2)
 
     if mode == "Dynamic":
         total_processes = st.number_input("Total Processes", min_value=1, max_value=300, value=44)
@@ -106,11 +107,11 @@ def main():
         with st.spinner("Running simulation..."):
             if mode == "Dynamic":
                 cpu_usage_data, queue_fill_data, average_wait_times = asyncio.run(run_simulation_dynamic(
-                    num_cpus, total_processes, processes_per_second, speedup_simulation, burst_time, interactive_burst_time_range, use_random_interactive_burst
+                    num_cpus, total_processes, processes_per_second, speedup_simulation, burst_time, interactive_burst_time_range, use_random_interactive_burst, time_quantum
                 ))
             else:
                 cpu_usage_data, queue_fill_data, average_wait_times = asyncio.run(run_simulation_static(
-                    num_cpus, speedup_simulation, process_settings, interactive_burst_time_range, use_random_interactive_burst
+                    num_cpus, speedup_simulation, process_settings, time_quantum, interactive_burst_time_range, use_random_interactive_burst
                 ))
 
             if cpu_usage_data and queue_fill_data:
